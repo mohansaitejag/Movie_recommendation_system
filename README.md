@@ -220,12 +220,3 @@ This project uses the MovieLens dataset under GroupLens research license. See `R
 - **Scikit-learn** for machine learning tools
 - **Flask** for the web framework
 
-## 📞 Contact
-
-**Sriharshith**
-- GitHub: [@sriharshith-2006](https://github.com/sriharshith-2006)
-- Project Link: [https://github.com/sriharshith-2006/AIKR](https://github.com/sriharshith-2006/AIKR)
-
----
-
-*Built with ❤️ for movie lovers everywhere*
