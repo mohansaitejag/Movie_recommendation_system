@@ -1,0 +1,295 @@
+{
+  "1": {
+    "liked_genres": [],
+    "disliked_genres": [],
+    "disliked_movies": [],
+    "session_count": 2
+  },
+  "23": {
+    "liked_genres": [
+      "Comedy",
+      "Drama",
+      "Romance",
+      "Adventure",
+      "Fantasy",
+      "Horror",
+      "Sci-Fi",
+      "Action",
+      "Thriller"
+    ],
+    "disliked_genres": [
+      "Comedy",
+      "Drama",
+      "Fantasy",
+      "Mystery",
+      "Romance"
+    ],
+    "disliked_movies": [
+      "PK (2014)"
+    ],
+    "rated_movies": [
+      "Graduate, The (1967)",
+      "Strictly Sexual (2008)",
+      "Eat Drink Man Woman (Yin shi nan nu) (1994)",
+      "Stand, The (1994)",
+      "Eva (2011)",
+      "American Beauty (1999)",
+      "Like Water for Chocolate (Como agua para chocolate) (1992)",
+      "PK (2014)",
+      "Matrix, The (1999)"
+    ],
+    "session_count": 1
+  },
+  "234": {
+    "liked_genres": [
+      "Action",
+      "Sci-Fi",
+      "Adventure",
+      "Comedy",
+      "Fantasy",
+      "Romance"
+    ],
+    "disliked_genres": [
+      "Crime",
+      "Drama"
+    ],
+    "disliked_movies": [
+      "Godfather, The (1972)"
+    ],
+    "rated_movies": [
+      "Godfather, The (1972)",
+      "Terminator 2: Judgment Day (1991)",
+      "Princess Bride, The (1987)",
+      "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964)",
+      "Don't Look Now: We're Being Shot At (La grande vadrouille) (1966)"
+    ],
+    "session_count": 0
+  },
+  "34": {
+    "liked_genres": [
+      "Drama",
+      "Romance",
+      "Sci-Fi",
+      "Comedy",
+      "Action",
+      "Adventure",
+      "Animation",
+      "Fantasy",
+      "Mystery",
+      "Thriller"
+    ],
+    "disliked_genres": [],
+    "disliked_movies": [],
+    "rated_movies": [
+      "American Beauty (1999)",
+      "Eternal Sunshine of the Spotless Mind (2004)",
+      "Perfect Sense (2011)",
+      "Love Actually (2003)",
+      "Star Wars: Episode VI - Return of the Jedi (1983)",
+      "All-Star Superman (2011)",
+      "Akira (1988)",
+      "Final Fantasy VII: Advent Children (2004)",
+      "Donnie Darko (2001)",
+      "Pretty Woman (1990)"
+    ],
+    "session_count": 0
+  },
+  "4": {
+    "liked_genres": [
+      "Comedy",
+      "Drama",
+      "Romance",
+      "War"
+    ],
+    "disliked_genres": [
+      "Horror",
+      "Sci-Fi",
+      "Comedy",
+      "Drama",
+      "Mystery"
+    ],
+    "disliked_movies": [
+      "Alien (1979)",
+      "Gosford Park (2001)"
+    ],
+    "rated_movies": [
+      "Forrest Gump (1994)",
+      "Alien (1979)",
+      "Graduate, The (1967)",
+      "Gosford Park (2001)"
+    ],
+    "session_count": 0
+  },
+  "5": {
+    "liked_genres": [
+      "Action",
+      "Adventure",
+      "Mystery",
+      "Romance",
+      "Thriller",
+      "Comedy",
+      "Drama",
+      "Fantasy",
+      "Sci-Fi"
+    ],
+    "disliked_genres": [],
+    "disliked_movies": [],
+    "rated_movies": [
+      "Speed (1994)",
+      "North by Northwest (1959)",
+      "Twister (1996)",
+      "Lara Croft Tomb Raider: The Cradle of Life (2003)",
+      "Dragonheart 2: A New Beginning (2000)",
+      "King Kong (2005)",
+      "Aelita: The Queen of Mars (Aelita) (1924)",
+      "Sleepless in Seattle (1993)"
+    ],
+    "session_count": 0
+  },
+  "180": {
+    "liked_genres": [
+      "Comedy",
+      "Drama",
+      "Romance",
+      "War",
+      "Action",
+      "Adventure",
+      "Animation",
+      "Children",
+      "IMAX",
+      "Fantasy"
+    ],
+    "disliked_genres": [],
+    "disliked_movies": [],
+    "rated_movies": [
+      "Forrest Gump (1994)",
+      "Incredibles, The (2004)",
+      "Madagascar: Escape 2 Africa (2008)",
+      "Lord of the Rings: The Two Towers, The (2002)"
+    ],
+    "session_count": 0
+  },
+  "45": {
+    "liked_genres": [
+      "Comedy",
+      "Drama",
+      "Romance",
+      "Crime",
+      "Mystery",
+      "Musical"
+    ],
+    "disliked_genres": [
+      "Fantasy"
+    ],
+    "disliked_movies": [
+      "PK (2014)"
+    ],
+    "rated_movies": [
+      "Thousand Clowns, A (1965)",
+      "PK (2014)",
+      "Inherent Vice (2014)",
+      "Song of the Thin Man (1947)"
+    ],
+    "session_count": 0
+  },
+  "500": {
+    "liked_genres": [
+      "Action",
+      "Adventure",
+      "Comedy",
+      "Fantasy",
+      "Romance",
+      "Thriller"
+    ],
+    "disliked_genres": [
+      "Action",
+      "Adventure"
+    ],
+    "disliked_movies": [
+      "Indiana Jones and the Last Crusade (1989)"
+    ],
+    "rated_movies": [
+      "Princess Bride, The (1987)",
+      "True Lies (1994)",
+      "Indiana Jones and the Last Crusade (1989)"
+    ],
+    "session_count": 0
+  },
+  "89": {
+    "liked_genres": [
+      "Drama",
+      "Romance",
+      "Comedy"
+    ],
+    "disliked_genres": [],
+    "disliked_movies": [],
+    "rated_movies": [
+      "Ugly Truth, The (2009)"
+    ],
+    "session_count": 0,
+    "engine_weights": {
+      "collab": 0.45,
+      "item_cf": 0.25,
+      "genre": 0.2,
+      "top": 0.1
+    }
+  },
+  "67": {
+    "liked_genres": [
+      "Crime",
+      "Drama",
+      "IMAX",
+      "Action",
+      "Romance",
+      "War",
+      "Adventure",
+      "Comedy"
+    ],
+    "disliked_genres": [
+      "Fantasy",
+      "Sci-Fi",
+      "IMAX",
+      "Animation",
+      "Musical",
+      "Children",
+      "War"
+    ],
+    "disliked_movies": [
+      "Star Wars: Episode VII - The Force Awakens (2015)",
+      "Little Mermaid, The (1989)",
+      "Green Mile, The (1999)",
+      "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964)",
+      "Goodfellas (1990)",
+      "Catch Me If You Can (2002)",
+      "Lethal Weapon 2 (1989)"
+    ],
+    "rated_movies": [
+      "Dark Knight, The (2008)",
+      "Rob Roy (1995)",
+      "Bottle Rocket (1996)",
+      "Grumpier Old Men (1995)",
+      "Star Wars: Episode IV - A New Hope (1977)",
+      "Guardians of the Galaxy (2014)",
+      "Star Wars: Episode VII - The Force Awakens (2015)",
+      "Godfather, The (1972)",
+      "Little Mermaid, The (1989)",
+      "Green Mile, The (1999)",
+      "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964)",
+      "Goodfellas (1990)",
+      "Catch Me If You Can (2002)",
+      "Lethal Weapon 2 (1989)",
+      "Flashback (1990)",
+      "The Great Train Robbery (1978)",
+      "Miracles - Mr. Canton and Lady Rose (1989)",
+      "Wedding Singer, The (1998)",
+      "Strictly Sexual (2008)"
+    ],
+    "session_count": 0,
+    "engine_weights": {
+      "collab": 0.45,
+      "item_cf": 0.25,
+      "genre": 0.2,
+      "top": 0.1
+    }
+  }
+}

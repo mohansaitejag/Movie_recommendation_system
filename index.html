@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineVerseAI - AI Movie Recommender</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-color: #ffffff;
+            --card-bg: #1e2025;
+            --nav-bg: rgba(15, 17, 21, 0.35);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            backdrop-filter: none;
+            z-index: 100;
+            transition: background 0.4s ease, backdrop-filter 0.4s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(15, 17, 21, 0.85);
+            backdrop-filter: blur(14px);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            font-style: italic;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            height: 92vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            background: linear-gradient(to right, rgba(15, 17, 21, 1) 0%, rgba(15, 17, 21, 0.4) 50%, rgba(15, 17, 21, 0) 100%),
+                url('hero_banner.png') center/cover no-repeat;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(to bottom, rgba(15, 17, 21, 0.7) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to top, var(--bg-color) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 500px;
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.1;
+        }
+
+        .hero-desc {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-color);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Slider Controls */
+        .slider-controls {
+            position: absolute;
+            bottom: 40px;
+            right: 60px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 20;
+        }
+
+        .slider-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .slider-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider-dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .slider-arrow {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            transition: background 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slider-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Sections */
+        .section {
+            padding: 30px 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .section-title-group {
+            display: flex;
+            align-items: baseline;
+        }
+
+        .see-more {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s;
+        }
+
+        .see-more:hover {
+            color: var(--text-primary);
+        }
+
+        /* Row Controls */
+        .row-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row-arrow {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .row-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .cards-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        /* Cards Row */
+        .cards-row {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+            scrollbar-width: none;
+        }
+
+        .cards-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .card {
+            min-width: 200px;
+            height: 300px;
+            border-radius: 12px;
+            background: var(--card-bg);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Filter Pills */
+        .filters {
+            display: flex;
+            gap: 12px;
+            padding: 10px 40px 30px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-pill {
+            padding: 8px 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .filter-pill:hover,
+        .filter-pill.active {
+            background: var(--text-primary);
+            color: var(--bg-color);
+        }
+
+        /* Because You Watched Cards */
+        .byw-card {
+            min-width: 280px;
+            height: 160px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .byw-card:hover {
+            transform: scale(1.05);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 100%;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: red;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .byw-card:hover .play-overlay {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .card-feedback-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row-reverse;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            z-index: 10;
+        }
+
+        .card:hover .card-feedback-overlay,
+        .byw-card:hover .card-feedback-overlay {
+            opacity: 1;
+        }
+
+        .card-feedback-btn {
+            background: none;
+            border: none;
+            color: #555;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            padding: 2px;
+        }
+
+        .card-feedback-btn:hover,
+        .card-feedback-btn:hover ~ .card-feedback-btn {
+            color: #ffd700;
+            transform: scale(1.2);
+        }
+
+        .play-icon {
+            width: 15px;
+            height: 15px;
+            fill: white;
+            margin-left: 3px;
+        }
+
+        /* Skeleton shimmer */
+        @keyframes shimmer {
+            0% {
+                background-position: -400px 0;
+            }
+
+            100% {
+                background-position: 400px 0;
+            }
+        }
+
+        .skeleton-card {
+            min-width: 180px;
+            height: 260px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #1e2025 25%, #2a2d35 50%, #1e2025 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.4s infinite linear;
+            flex-shrink: 0;
+        }
+
+        .skeleton-byw {
+            width: 260px;
+            height: 155px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #1e2025 25%, #2a2d35 50%, #1e2025 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.4s infinite linear;
+            flex-shrink: 0;
+        }
+
+        /* Gradients */
+        .grad-1 {
+            background: radial-gradient(circle at top right, #2a5298, #0f1c3a);
+        }
+
+        .grad-2 {
+            background: radial-gradient(circle at top right, #f0c27b, #2b0829);
+        }
+
+        .grad-3 {
+            background: radial-gradient(circle at top right, #38ef7d, #094742);
+        }
+
+        .grad-4 {
+            background: radial-gradient(circle at top right, #ff9966, #5c1819);
+        }
+
+        .grad-5 {
+            background: radial-gradient(circle at top right, #8E2DE2, #1b004d);
+        }
+
+        /* Noise Overlay */
+        .card::after,
+        .byw-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%220.15%22/%3E%3C/svg%3E');
+            mix-blend-mode: overlay;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .placeholder-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px 20px 20px 20px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 50%, transparent 100%);
+            font-weight: 700;
+            font-size: 18px;
+            line-height: 1.3;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            z-index: 2;
+            display: flex;
+            align-items: flex-end;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .card,
+        .byw-card {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ===================== LOGIN OVERLAY ===================== */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+            overflow: hidden;
+        }
+
+        .login-bg {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0;
+            transform: scale(1.05);
+            filter: brightness(1.5) saturate(1.0);
+            z-index: 0;
+        }
+
+        .login-bg-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            animation: scrollCol 18s linear infinite;
+        }
+
+        .login-bg-col:nth-child(even) {
+            animation-direction: reverse;
+            animation-duration: 22s;
+        }
+
+        .login-bg-col img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            display: block;
+        }
+
+        @keyframes scrollCol {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+
+        .login-vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at center, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.75) 100%),
+                linear-gradient(135deg, rgba(15, 17, 21, 0.9) 0%, rgba(15, 17, 21, 0.5) 50%, rgba(15, 17, 21, 0.9) 100%);
+            z-index: 1;
+        }
+
+        .login-box {
+            position: relative;
+            z-index: 10;
+            width: 420px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 48px 44px;
+            backdrop-filter: blur(30px);
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                0 40px 80px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: loginReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(24px);
+        }
+
+        @keyframes loginReveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 32px;
+            justify-content: center;
+        }
+
+        .login-logo-icon {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-logo-text {
+            font-size: 26px;
+            font-weight: 800;
+            font-style: italic;
+            letter-spacing: -1px;
+            color: white;
+        }
+
+        .login-tagline {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            margin-bottom: 36px;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .input-group-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: rgba(255, 255, 255, 0.35);
+            pointer-events: none;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+            font-family: inherit;
+        }
+
+        .login-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .login-input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 8px 0 20px;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-users {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+
+        .demo-chip {
+            flex: 1;
+            padding: 8px 0;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .demo-chip:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: white;
+            color: #0f1115;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+            letter-spacing: 0.3px;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+            background: #f0f0f0;
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 12px;
+        }
+
+        /* ===================== SEARCH BAR ===================== */
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        #searchInput {
+            padding: 8px 15px 8px 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            outline: none;
+            font-size: 14px;
+            width: 320px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            width: 16px;
+            height: 16px;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 45px;
+            left: 0;
+            width: 100%;
+            background: rgba(20, 22, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 200;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .search-item {
+            padding: 12px 15px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .search-item-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.5;
+        }
+
+        /* Feedback Modal */
+        .feedback-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feedback-box {
+            background: rgba(30, 32, 37, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            width: 400px;
+            max-width: 90%;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .feedback-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: white;
+        }
+
+        .feedback-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .feedback-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .feedback-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .feedback-close:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Mood Modal -->
+    <div class="feedback-modal" id="moodModal">
+        <div class="feedback-box" id="moodBox">
+            <h2 class="feedback-title" style="margin-bottom: 10px;">Action, romance, thriller… what’s your pick today?</h2>
+            <p style="color:var(--text-secondary);font-size:14px;margin-bottom:25px;">We'll tailor your Top Picks based
+                on your mood.</p>
+            <button class="feedback-btn" onclick="selectMood('Action')">💥 Action</button>
+            <button class="feedback-btn" onclick="selectMood('Comedy')">😂 Comedy</button>
+            <button class="feedback-btn" onclick="selectMood('Crime')">🕵️‍♂️ Crime</button>
+            <button class="feedback-btn" onclick="selectMood('Drama')">🎭 Drama</button>
+            <button class="feedback-btn" onclick="selectMood('Romance')">❤️ Romance</button>
+            <button class="feedback-btn" onclick="selectMood('Thriller')">🔪 Thriller</button>
+            <button class="feedback-btn" onclick="selectMood('Any')"
+                style="background:transparent;border:none;color:var(--text-secondary);font-weight:normal;margin-top:10px;">Just
+                show me everything</button>
+        </div>
+    </div>
+
+
+
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-bg" id="loginBg"></div>
+        <div class="login-vignette"></div>
+        <div class="login-box">
+            <div class="login-logo">
+                <span class="login-logo-icon">
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="18" cy="18" r="14" stroke="white" stroke-width="2"/>
+                        <path d="M12 18 L16 14 L20 18 L24 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="18" cy="10" r="1.5" fill="white"/>
+                        <circle cx="26" cy="18" r="1.5" fill="white"/>
+                        <circle cx="18" cy="26" r="1.5" fill="white"/>
+                        <circle cx="10" cy="18" r="1.5" fill="white"/>
+                        <circle cx="23" cy="13" r="1" fill="rgba(255,255,255,0.6)"/>
+                        <circle cx="23" cy="23" r="1" fill="rgba(255,255,255,0.6)"/>
+                        <circle cx="13" cy="23" r="1" fill="rgba(255,255,255,0.6)"/>
+                        <circle cx="13" cy="13" r="1" fill="rgba(255,255,255,0.6)"/>
+                    </svg>
+                </span>
+                <span class="login-logo-text">CineVerseAI</span>
+            </div>
+            <p class="login-tagline">Your personal AI cinema</p>
+            <div id="loginError"
+                style="color:#ff6b6b; font-size:13px; margin-bottom:16px; text-align:center; display:none;"></div>
+            <div class="input-group">
+                <svg class="input-group-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                <input type="number" id="userIdInput" class="login-input" placeholder="User ID (1–610)" required>
+            </div>
+            <div class="input-group">
+                <svg class="input-group-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <input type="password" id="passwordInput" class="login-input" placeholder="Password">
+            </div>
+            <div class="login-divider">or try a demo account</div>
+            <div class="demo-users">
+                <button class="demo-chip" onclick="fillDemo(1)">User #1</button>
+                <button class="demo-chip" onclick="fillDemo(42)">User #42</button>
+                <button class="demo-chip" onclick="fillDemo(100)">User #100</button>
+            </div>
+            <button class="login-btn" onclick="handleLogin()">Sign In</button>
+            <p class="login-footer">Powered by TF-IDF · Cosine Similarity · Collaborative Filtering</p>
+        </div>
+    </div>
+
+    <nav>
+        <div class="logo">
+            <span class="logo-icon">
+                <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="18" cy="18" r="14" stroke="white" stroke-width="2"/>
+                    <path d="M12 18 L16 14 L20 18 L24 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="18" cy="10" r="1.5" fill="white"/>
+                    <circle cx="26" cy="18" r="1.5" fill="white"/>
+                    <circle cx="18" cy="26" r="1.5" fill="white"/>
+                    <circle cx="10" cy="18" r="1.5" fill="white"/>
+                    <circle cx="23" cy="13" r="1" fill="rgba(255,255,255,0.6)"/>
+                    <circle cx="23" cy="23" r="1" fill="rgba(255,255,255,0.6)"/>
+                    <circle cx="13" cy="23" r="1" fill="rgba(255,255,255,0.6)"/>
+                    <circle cx="13" cy="13" r="1" fill="rgba(255,255,255,0.6)"/>
+                </svg>
+            </span>
+            CineVerseAI
+        </div>
+        <div class="nav-links">
+            <a href="#" class="active" onclick="scrollToTop(event)">Home</a>
+            <a href="#top-picks" onclick="scrollToSection(event, 'top-picks')">Movies</a>
+            <a href="#category" onclick="scrollToSection(event, 'category')">Category</a>
+        </div>
+        <div class="nav-actions">
+            <div id="currentMoodIndicator"
+                style="display:none; align-items:center; gap:5px; padding:6px 12px; border-radius:20px; background:rgba(255,255,255,0.05); color:var(--text-secondary); font-size:14px; cursor:pointer;"
+                onclick="showMoodModal()">
+                Mood: <span id="currentMoodText" style="color:white;font-weight:bold;">Any</span>
+            </div>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search movies..." autocomplete="off">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <div id="searchDropdown" class="search-dropdown"></div>
+            </div>
+            <button onclick="logout()"
+                style="padding: 8px 15px; border-radius: 20px; border: none; background: rgba(255,255,255,0.1); color: white; cursor: pointer; font-weight: bold;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Avengers: Endgame</h1>
+            <p class="hero-desc">After the devastating events of Infinity War, the universe is in ruins. The remaining
+                Avengers assemble once more to reverse Thanos' actions and restore balance.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary">
+                    Watch Now
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                </button>
+                <button class="btn btn-secondary">
+                    Details
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="slider-controls">
+            <div class="slider-arrow prev-arrow" onclick="prevSlide()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </div>
+            <div class="slider-dots">
+                <div class="slider-dot active" onclick="setSlide(0)"></div>
+                <div class="slider-dot" onclick="setSlide(1)"></div>
+                <div class="slider-dot" onclick="setSlide(2)"></div>
+                <div class="slider-dot" onclick="setSlide(3)"></div>
+                <div class="slider-dot" onclick="setSlide(4)"></div>
+                <div class="slider-dot" onclick="setSlide(5)"></div>
+            </div>
+            <div class="slider-arrow next-arrow" onclick="nextSlide()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 0: Based on Feedback (Dynamic) -->
+    <div class="section" id="recent-feedback-section" style="display:none;">
+        <div class="section-header">
+            <div class="section-title-group">
+                <h2 class="section-title">Based on your recent feedback</h2>
+            </div>
+            <div class="row-controls">
+                <button class="row-arrow" onclick="scrollRow('recent-feedback-container', -1)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <button class="row-arrow" onclick="scrollRow('recent-feedback-container', 1)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="cards-wrapper">
+            <div class="cards-row" id="recent-feedback-container"></div>
+        </div>
+    </div>
+
+    <!-- SECTION 1: Top Picks -->
+    <div class="section" id="top-picks">
+        <div class="section-header">
+            <div class="section-title-group">
+                <h2 class="section-title">Today's top picks for you</h2>
+            </div>
+            <div class="row-controls">
+                <button class="row-arrow" onclick="scrollRow('top-picks-container', -1)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <button class="row-arrow" onclick="scrollRow('top-picks-container', 1)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="cards-wrapper">
+            <div class="cards-row" id="top-picks-container"></div>
+        </div>
+    </div>
+
+    <!-- Genre filter pills -->
+    <div class="filters" id="category">
+        <div class="filter-pill active" onclick="filterByGenre(this, 'all')">All Popular</div>
+        <div class="filter-pill" onclick="filterByGenre(this, 'Action')">Action</div>
+        <div class="filter-pill" onclick="filterByGenre(this, 'Romance')">Romance</div>
+        <div class="filter-pill" onclick="filterByGenre(this, 'Adventure')">Adventure</div>
+        <div class="filter-pill" onclick="filterByGenre(this, 'Horror')">Horror</div>
+        <div class="filter-pill" onclick="filterByGenre(this, 'Drama')">Drama</div>
+        <div class="filter-pill" onclick="filterByGenre(this, 'Sci-Fi')">Sci-Fi</div>
+        <div class="filter-pill" onclick="filterByGenre(this, 'Comedy')">Comedy</div>
+    </div>
+
+    <!-- Genre Results -->
+    <div id="genre-results-section" class="section" style="display:none;">
+        <div class="section-header">
+            <div class="section-title-group">
+                <h2 class="section-title" id="genre-results-title">Action Movies</h2>
+            </div>
+            <span onclick="clearGenreFilter()"
+                style="cursor:pointer; color:var(--text-secondary); font-size:13px; display:flex; align-items:center; gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+                Back to Home
+            </span>
+        </div>
+        <div class="cards-row" id="genre-row-1" style="margin-bottom:30px;"></div>
+        <div class="cards-row" id="genre-row-2" style="margin-bottom:30px;"></div>
+        <div class="cards-row" id="genre-row-3"></div>
+    </div>
+
+    <!-- Search Results -->
+    <div id="search-result-section" class="section" style="display:none;">
+        <div class="section-header" style="margin-top: 40px;">
+            <div class="section-title-group">
+                <h2 class="section-title">Search Result</h2>
+            </div>
+            <span onclick="clearSearch()"
+                style="cursor:pointer; color:var(--text-secondary); font-size:13px; display:flex; align-items:center; gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+                Clear Search
+            </span>
+        </div>
+        <div class="cards-row" id="searched-movie-container" style="margin-bottom: 40px; justify-content: center;">
+        </div>
+        <h3 style="margin-top:20px;margin-bottom:15px;font-size:18px;font-weight:600; padding: 0 40px;">Similar Movies
+            You Might Like</h3>
+        <div class="cards-row" id="search-recommendations-container" style="padding: 0 40px;"></div>
+    </div>
+
+    <!-- SECTION 2: Because You Watched -->
+    <div class="section" id="section-because">
+        <div class="section-header">
+            <div class="section-title-group">
+                <h2 class="section-title">Because You Watched</h2>
+            </div>
+        </div>
+        <div id="because-container"></div>
+    </div>
+
+    <!-- SECTION 3: Users Like You -->
+    <div class="section" id="section-users-like-you">
+        <div class="section-header">
+            <div class="section-title-group">
+                <h2 class="section-title">Users Like You</h2>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <a href="#" class="see-more">See more
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <div class="row-controls">
+                    <button class="row-arrow" onclick="scrollRow('users-like-you-container', -1)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <button class="row-arrow" onclick="scrollRow('users-like-you-container', 1)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="cards-wrapper">
+            <div class="cards-row" id="users-like-you-container"></div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    // ===================== LOGIN BACKGROUND =====================
+    const DEMO_POSTERS = [
+        "https://image.tmdb.org/t/p/w342/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg",
+        "https://image.tmdb.org/t/p/w342/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg",
+        "https://image.tmdb.org/t/p/w342/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg",
+        "https://image.tmdb.org/t/p/w342/nMKdUUepR0i5zn0y1T4CsSB5chy.jpg",
+        "https://image.tmdb.org/t/p/w342/vVpEOvdxVBP2aV166j5Xlvb5Cdc.jpg",
+        "https://image.tmdb.org/t/p/w342/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg",
+        "https://image.tmdb.org/t/p/w342/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg",
+        "https://image.tmdb.org/t/p/w342/or06FN3Dka5tukK1e9sl16pB3iy.jpg",
+        "https://image.tmdb.org/t/p/w342/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+        "https://image.tmdb.org/t/p/w342/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg",
+        "https://image.tmdb.org/t/p/w342/6FfCtAuVAW8XJjZ7eWeLibRLWTw.jpg",
+        "https://image.tmdb.org/t/p/w342/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg",
+    ];
+
+    function buildLoginBackground() {
+        const bg = document.getElementById('loginBg');
+        if (!bg) return;
+        const shuffled = [...DEMO_POSTERS, ...DEMO_POSTERS].sort(() => Math.random() - 0.5);
+        for (let c = 0; c < 6; c++) {
+            const col = document.createElement('div');
+            col.className = 'login-bg-col';
+            for (let pass = 0; pass < 2; pass++) {
+                for (let p = 0; p < 8; p++) {
+                    const img = document.createElement('img');
+                    img.src = shuffled[(c * 8 + p) % shuffled.length];
+                    img.alt = '';
+                    col.appendChild(img);
+                }
+            }
+            bg.appendChild(col);
+        }
+    }
+
+    function fillDemo(id) {
+        document.getElementById('userIdInput').value = id;
+        document.getElementById('passwordInput').value = 'demo';
+        document.getElementById('loginError').style.display = 'none';
+    }
+
+    buildLoginBackground();
+
+    // ===================== NAV =====================
+    const navEl = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+        navEl.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    function scrollToTop(e) {
+        e.preventDefault();
+        if (document.getElementById('search-result-section').style.display === 'block') clearSearch();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setActiveNav(e.target);
+    }
+
+    function scrollToSection(e, id) {
+        e.preventDefault();
+        if (document.getElementById('search-result-section').style.display === 'block') clearSearch();
+        setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) {
+                const top = el.getBoundingClientRect().top + window.scrollY - 90;
+                window.scrollTo({ top, behavior: 'smooth' });
+            }
+        }, 50);
+        setActiveNav(e.target);
+    }
+
+    function setActiveNav(el) {
+        document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    // ===================== GENRE FILTER =====================
+    function filterByGenre(pill, genre) {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        const section = document.getElementById('genre-results-section');
+        const sectionBecause = document.getElementById('section-because');
+        const sectionUsers = document.getElementById('section-users-like-you');
+
+        if (genre === 'all') {
+            section.style.display = 'none';
+            sectionBecause.style.display = 'block';
+            sectionUsers.style.display = 'block';
+            return;
+        }
+
+        sectionBecause.style.display = 'none';
+        sectionUsers.style.display = 'none';
+        document.getElementById('genre-results-title').innerText = `${genre} Movies`;
+        ['genre-row-1', 'genre-row-2', 'genre-row-3'].forEach(id => {
+            document.getElementById(id).innerHTML = '<div style="color:var(--text-secondary); padding: 10px 0;">Loading...</div>';
+        });
+        section.style.display = 'block';
+        setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+
+        fetch(`http://127.0.0.1:5001/genre/${encodeURIComponent(currentUserId || '1')}/${encodeURIComponent(genre)}`)
+            .then(res => res.json())
+            .then(titles => {
+                const rowSize = 6;
+                [titles.slice(0, rowSize), titles.slice(rowSize, rowSize * 2), titles.slice(rowSize * 2, rowSize * 3)].forEach((row, ri) => {
+                    document.getElementById(`genre-row-${ri + 1}`).innerHTML = row.map((title, i) =>
+                        `<div class="card ${getGradientClass(i + ri * 6)}" id="gr-${ri}-${i}" data-title="${encodeURIComponent(title)}">
+                            <div class="placeholder-title">${title}</div>
+                            ${getFeedbackOverlayHTML(title)}
+                        </div>`
+                    ).join('') || '';
+                });
+                document.querySelectorAll('#genre-results-section [data-title]').forEach(card => {
+                    loadPosterIntoCard(card, decodeURIComponent(card.dataset.title));
+                });
+            })
+            .catch(() => {
+                document.getElementById('genre-row-1').innerHTML = '<p style="color:var(--text-secondary)">Failed to load. Is the backend running?</p>';
+            });
+    }
+
+    function clearGenreFilter() {
+        document.getElementById('genre-results-section').style.display = 'none';
+        document.getElementById('section-because').style.display = 'block';
+        document.getElementById('section-users-like-you').style.display = 'block';
+        document.querySelectorAll('.filter-pill').forEach((p, i) => p.classList.toggle('active', i === 0));
+    }
+
+    // ===================== HERO SLIDER =====================
+    const heroSlides = [
+        { title: "Avengers: Endgame", desc: "After the devastating events of Infinity War, the remaining Avengers assemble once more to reverse Thanos' actions and restore balance to the universe.", bg: "https://image.tmdb.org/t/p/original/7RyHsO4yDXtBv1zUU3mTpHeQ0d5.jpg" },
+        { title: "Interstellar", desc: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival on a dying Earth.", bg: "https://image.tmdb.org/t/p/original/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg" },
+        { title: "The Dark Knight", desc: "When the Joker wreaks havoc on Gotham, Batman must confront one of the greatest psychological and physical tests of his ability to fight injustice.", bg: "https://image.tmdb.org/t/p/original/4ORaDgLekcxzHmJPeSncyOgZImR.jpg" },
+        { title: "Avatar", desc: "A Marine dispatched to Pandora becomes torn between following orders and protecting the world he feels is his home.", bg: "https://image.tmdb.org/t/p/original/tvaFREoQ7ssrPcwfz7Xbj2A7B2t.jpg" },
+        { title: "Inception", desc: "A thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.", bg: "https://image.tmdb.org/t/p/original/s3TBrRGB1iav7gFOCNx3H31MoES.jpg" },
+        { title: "Dune", desc: "Paul Atreides must travel to the most dangerous planet in the universe to ensure the future of his family and people.", bg: "https://image.tmdb.org/t/p/original/sfjqJDmNqMIImO5khiddb9TARvO.jpg" },
+    ];
+
+    let currentSlide = 0;
+    let slideInterval;
+
+    function renderSlide(index) {
+        const slide = heroSlides[index];
+        const heroContent = document.querySelector('.hero-content');
+        const hero = document.querySelector('.hero');
+        heroContent.style.opacity = 0;
+        setTimeout(() => {
+            hero.style.background = `linear-gradient(to right, rgba(15,17,21,1) 0%, rgba(15,17,21,0.4) 50%, rgba(15,17,21,0) 100%), url('${slide.bg}') center/cover no-repeat`;
+            document.querySelector('.hero-title').innerText = slide.title;
+            document.querySelector('.hero-desc').innerText = slide.desc;
+            heroContent.style.opacity = 1;
+        }, 300);
+        document.querySelectorAll('.slider-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
+    }
+
+    function nextSlide() { currentSlide = (currentSlide + 1) % heroSlides.length; renderSlide(currentSlide); resetInterval(); }
+    function prevSlide() { currentSlide = (currentSlide - 1 + heroSlides.length) % heroSlides.length; renderSlide(currentSlide); resetInterval(); }
+    function setSlide(index) { currentSlide = index; renderSlide(currentSlide); resetInterval(); }
+    function resetInterval() { clearInterval(slideInterval); slideInterval = setInterval(nextSlide, 5000); }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelector('.hero-content').style.transition = 'opacity 0.4s ease-in-out';
+        document.querySelector('.hero').style.transition = 'background 0.4s ease-in-out';
+        renderSlide(0);
+        resetInterval();
+    });
+
+    // ===================== AUTH =====================
+    function getGradientClass(index) { return `grad-${(index % 5) + 1}`; }
+
+    let currentUserId = null;
+
+    function handleLogin() {
+        const userId = document.getElementById('userIdInput').value.trim();
+        if (!userId) return;
+
+        const btn = document.querySelector('.login-btn');
+        btn.innerText = "Signing In...";
+        btn.disabled = true;
+
+        fetch('http://127.0.0.1:5001/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('loginOverlay').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loginOverlay').style.display = 'none', 400);
+                    currentUserId = userId;
+                    localStorage.setItem('userId', userId);
+                    showMoodModal();
+                } else {
+                    const err = document.getElementById('loginError');
+                    err.innerText = data.message || "Invalid User ID";
+                    err.style.display = "block";
+                    btn.innerText = "Sign In";
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                const errEl = document.getElementById('loginError');
+                errEl.innerText = "Failed to connect to server.";
+                errEl.style.display = "block";
+                btn.innerText = "Sign In";
+                btn.disabled = false;
+            });
+    }
+
+    function logout() {
+        currentUserId = null;
+        localStorage.removeItem('userId');
+        document.getElementById('userIdInput').value = '';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('loginError').style.display = 'none';
+        const overlay = document.getElementById('loginOverlay');
+        overlay.style.display = 'flex';
+        void overlay.offsetWidth;
+        overlay.style.opacity = '1';
+        document.querySelector('.login-btn').innerText = "Sign In";
+        document.querySelector('.login-btn').disabled = false;
+    }
+
+    function scrollRow(id, direction) {
+        const row = document.getElementById(id);
+        if (row) {
+            const scrollAmount = row.clientWidth * 0.8;
+            row.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+    }
+
+    // ===================== RECOMMENDATIONS =====================
+    function loadRecommendations(userId) {
+        const skeletonCards = Array(10).fill('<div class="skeleton-card"></div>').join('');
+        const skeletonByw = Array(10).fill('<div class="skeleton-byw"></div>').join('');
+        document.getElementById("top-picks-container").innerHTML = skeletonCards;
+        document.getElementById("because-container").innerHTML = `<div class="cards-wrapper"><div class="cards-row" style="gap:15px;">${skeletonByw}</div></div>`;
+        document.getElementById("users-like-you-container").innerHTML = skeletonCards;
+
+        fetch(`http://127.0.0.1:5001/recommend/${userId}?mood=${encodeURIComponent(currentMood)}`)
+            .then(res => res.json())
+            .then(data => {
+                const topTitles = data.top_picks || [];
+                const userTitles = data.users_like_you || [];
+
+                document.getElementById("top-picks-container").innerHTML = topTitles.map((title, i) =>
+                    `<div class="card ${getGradientClass(i)}" id="tp-${i}" data-title="${encodeURIComponent(title)}">
+                    <div class="placeholder-title">${title}</div>
+                    ${getFeedbackOverlayHTML(title)}
+                </div>`
+                ).join("");
+
+                let becauseHTML = "";
+                (data.because || []).forEach((b, idx) => {
+                    becauseHTML += `<div style="display: flex; justify-content: space-between; align-items: center; margin-top:20px; margin-bottom:15px;">`;
+                    becauseHTML += `<h3 style="font-size:16px;font-weight:normal;color:var(--text-secondary); margin: 0;">Because you watched <span style="color:white;font-weight:600;">${b.because}</span>:</h3>`;
+                    becauseHTML += `<div class="row-controls">
+                        <button class="row-arrow" onclick="scrollRow('because-row-${idx}', -1)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                        </button>
+                        <button class="row-arrow" onclick="scrollRow('because-row-${idx}', 1)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </button>
+                    </div></div>`;
+                    becauseHTML += `<div class="cards-wrapper"><div class="cards-row" id="because-row-${idx}">`;
+                    (b.recommendations || []).forEach((title, i) => {
+                        becauseHTML += `
+                        <div class="byw-card ${getGradientClass(i + idx * 3)}" id="byw-${idx}-${i}" data-title="${encodeURIComponent(title)}">
+                            <div class="placeholder-title">${title}</div>
+                            <div class="play-overlay"><svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${Math.floor(Math.random() * 60 + 40)}%;"></div></div>
+                            ${getFeedbackOverlayHTML(title)}
+                        </div>`;
+                    });
+                    becauseHTML += `</div></div>`;
+                });
+                document.getElementById("because-container").innerHTML = becauseHTML;
+
+                document.getElementById("users-like-you-container").innerHTML = userTitles.map((title, i) =>
+                    `<div class="card ${getGradientClass(i + 3)}" id="uly-${i}" data-title="${encodeURIComponent(title)}">
+                    <div class="placeholder-title">${title}</div>
+                    ${getFeedbackOverlayHTML(title)}
+                </div>`
+                ).join("");
+
+                document.querySelectorAll('[data-title]').forEach(card => {
+                    loadPosterIntoCard(card, decodeURIComponent(card.dataset.title));
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Failed to load recommendations. Is the backend running on port 5001?");
+            });
+    }
+
+    function loadPosterIntoCard(card, title) {
+        fetch(`http://127.0.0.1:5001/poster/${encodeURIComponent(title)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.poster) {
+                    const img = new Image();
+                    img.onload = () => {
+                        card.style.backgroundImage = `url('${data.poster}')`;
+                        card.style.backgroundSize = 'cover';
+                        card.style.backgroundPosition = 'center';
+                        card.classList.remove('grad-1', 'grad-2', 'grad-3', 'grad-4', 'grad-5');
+                    };
+                    img.src = data.poster;
+                }
+            })
+            .catch(() => { });
+    }
+
+    // ===================== SEARCH =====================
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+    const searchDropdown = document.getElementById('searchDropdown');
+
+    searchInput.addEventListener('focus', () => { if (currentUserId) fetchSearch(searchInput.value.trim()); });
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        if (!currentUserId) return;
+        searchTimeout = setTimeout(() => fetchSearch(e.target.value.trim()), 300);
+    });
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-container')) searchDropdown.style.display = 'none';
+    });
+
+    function fetchSearch(query) {
+        fetch(`http://127.0.0.1:5001/search/${currentUserId}?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(titles => {
+                searchDropdown.innerHTML = titles.length === 0
+                    ? `<div class="search-item" style="justify-content:center; cursor:default;">No results found</div>`
+                    : titles.map(title => `
+                    <div class="search-item" onclick="selectSearchMovie('${encodeURIComponent(title).replace(/'/g, "\\'")}')">
+                        <svg class="search-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        ${title}
+                    </div>`).join('');
+                searchDropdown.style.display = 'flex';
+            })
+            .catch(() => {
+                searchDropdown.innerHTML = `<div class="search-item" style="color:#ff6b6b; cursor:default;">Error fetching results</div>`;
+                searchDropdown.style.display = 'flex';
+            });
+    }
+
+    function selectSearchMovie(encodedTitle) {
+        const title = decodeURIComponent(encodedTitle);
+        searchInput.value = title;
+        searchDropdown.style.display = 'none';
+
+        document.getElementById('top-picks').style.display = 'none';
+        document.getElementById('category').style.display = 'none';
+        document.getElementById('genre-results-section').style.display = 'none';
+        document.getElementById('section-because').style.display = 'none';
+        document.getElementById('section-users-like-you').style.display = 'none';
+        document.querySelector('.hero').style.display = 'none';
+
+        document.getElementById('search-result-section').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        document.getElementById('searched-movie-container').innerHTML = `
+            <div class="card grad-1" id="search-main" style="width:320px;height:480px;" data-title="${encodedTitle}">
+                <div class="placeholder-title" style="font-size:22px;">${title}</div>
+                ${getFeedbackOverlayHTML(title)}
+            </div>`;
+        document.getElementById('search-recommendations-container').innerHTML = '<div style="color:var(--text-secondary);">Loading recommendations...</div>';
+
+        loadPosterIntoCard(document.getElementById('search-main'), title);
+
+        fetch(`http://127.0.0.1:5001/recommend_movie/${currentUserId}?q=${encodedTitle}`)
+            .then(res => res.json())
+            .then(data => {
+                const recs = data.recommendations || [];
+                if (recs.length === 0) {
+                    document.getElementById('search-recommendations-container').innerHTML = '<div style="color:var(--text-secondary);">No similar movies found.</div>';
+                } else {
+                    document.getElementById('search-recommendations-container').innerHTML = recs.map((recTitle, i) =>
+                        `<div class="card ${getGradientClass(i + 1)}" id="search-rec-${i}" data-title="${encodeURIComponent(recTitle)}">
+                        <div class="placeholder-title">${recTitle}</div>
+                        ${getFeedbackOverlayHTML(recTitle)}
+                    </div>`
+                    ).join('');
+                    document.querySelectorAll('#search-recommendations-container [data-title]').forEach(card => {
+                        loadPosterIntoCard(card, decodeURIComponent(card.dataset.title));
+                    });
+                }
+            })
+            .catch(() => {
+                document.getElementById('search-recommendations-container').innerHTML = '<div style="color:#ff6b6b;">Error loading recommendations.</div>';
+            });
+    }
+
+    function clearSearch() {
+        searchInput.value = '';
+        document.getElementById('search-result-section').style.display = 'none';
+        document.querySelector('.hero').style.display = 'flex';
+        document.getElementById('top-picks').style.display = 'block';
+        document.getElementById('category').style.display = 'flex';
+        document.getElementById('section-because').style.display = 'block';
+        document.getElementById('section-users-like-you').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ===================== MOOD LOGIC =====================
+    let currentMood = 'Any';
+
+    function showMoodModal() {
+        const modal = document.getElementById('moodModal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.style.opacity = '1';
+            document.getElementById('moodBox').style.transform = 'translateY(0)';
+        }, 10);
+    }
+
+    function hideMoodModal() {
+        const modal = document.getElementById('moodModal');
+        modal.style.opacity = '0';
+        document.getElementById('moodBox').style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    function selectMood(mood) {
+        currentMood = mood;
+        document.getElementById('currentMoodText').innerText = mood;
+        document.getElementById('currentMoodIndicator').style.display = 'flex';
+        hideMoodModal();
+        if (currentUserId) {
+            loadRecommendations(currentUserId);
+        }
+    }
+
+    // ===================== INIT =====================
+    window.onload = () => {
+        const storedUserId = localStorage.getItem('userId');
+        if (storedUserId) {
+            currentUserId = storedUserId;
+            document.getElementById('loginOverlay').style.display = 'none';
+            showMoodModal();
+        } else {
+            document.getElementById('loginOverlay').style.display = 'flex';
+        }
+    };
+
+    // ===================== FEEDBACK =====================
+    function getFeedbackOverlayHTML(title) {
+        const t = encodeURIComponent(title);
+        return `
+            <div class="card-feedback-overlay">
+                <button class="card-feedback-btn" onclick="submitFeedback('5', '${t}', event)" title="5 Stars">★</button>
+                <button class="card-feedback-btn" onclick="submitFeedback('4', '${t}', event)" title="4 Stars">★</button>
+                <button class="card-feedback-btn" onclick="submitFeedback('3', '${t}', event)" title="3 Stars">★</button>
+                <button class="card-feedback-btn" onclick="submitFeedback('2', '${t}', event)" title="2 Stars">★</button>
+                <button class="card-feedback-btn" onclick="submitFeedback('1', '${t}', event)" title="1 Star">★</button>
+            </div>
+        `;
+    }
+
+    function submitFeedback(feedbackType, encodedMovieTitle, event) {
+        event.stopPropagation();
+        const movieTitle = decodeURIComponent(encodedMovieTitle);
+        if (!currentUserId || !movieTitle) return;
+
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = "⏳";
+
+        fetch('http://127.0.0.1:5001/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: currentUserId,
+                movie_title: movieTitle,
+                feedback: feedbackType
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                btn.innerText = "✅";
+                setTimeout(() => { btn.innerText = originalText; }, 1000);
+
+                if (data.success && feedbackType !== 'skip') {
+                    const feedbackSection = document.getElementById('recent-feedback-section');
+                    const feedbackContainer = document.getElementById('recent-feedback-container');
+                    feedbackSection.style.display = 'block';
+
+                    feedbackContainer.innerHTML = (data.recommendations || []).map((title, i) =>
+                        `<div class="card ${getGradientClass(i + 4)}" id="fb-${i}" data-title="${encodeURIComponent(title)}">
+                        <div class="placeholder-title">${title}</div>
+                        ${getFeedbackOverlayHTML(title)}
+                    </div>`
+                    ).join("");
+
+                    document.querySelectorAll('#recent-feedback-container [data-title]').forEach(card => {
+                        loadPosterIntoCard(card, decodeURIComponent(card.dataset.title));
+                    });
+
+                    loadRecommendations(currentUserId);
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                btn.innerText = "❌";
+                setTimeout(() => { btn.innerText = originalText; }, 1000);
+            });
+    }
+</script>
+
+</html>
